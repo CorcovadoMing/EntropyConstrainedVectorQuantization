@@ -11,7 +11,7 @@ def init(data, k):
     centroid = [data[int(len(data)*random())]]
 
     # Cache dist table to prevent duplicate computations
-    cache = [ -1 for i in xrange(len(data)) ]
+    cache = [-1] * len(data)
     recent_centroid = centroid[0]
 
     while len(centroid) < k:
@@ -35,13 +35,16 @@ def ECVQ(data, k, l):
 
     # Initial variables
     total = len(data)
+    update_list = xrange(k)
+    cache = [ [-1] * k ]
 
     # Initial the centroid with kmeans++
     centroid = init(data, k)
-    centroid_prob = [ 0.000000000001 for i in centroid ]
+    centroid_prob = [ 0.000000000001 ] * k
 
     for times in xrange(10):
         print times
+
         # Assign each data point to its cluster
         centroid_member = [ [] for i in centroid ]
         for i in xrange(total):
@@ -57,13 +60,20 @@ def ECVQ(data, k, l):
 
         # Update centroids
         update_id = 0
+        count = 0
         for c in centroid_member:
             if len(c):
                 acc = data[c[0]]
-                nacc = [float(len(c)) for i in data[0]]
+                nacc = [float(len(c))] * len(data[0])
                 for i in xrange(1, len(c)):
                     acc = map(add, acc, data[c[i]])
+                t = centroid[update_id]
                 centroid[update_id] = map(div, acc, nacc)[:]
+                if t == centroid[update_id]:
+                    count += 1
+            else:
+                    count += 1
             update_id += 1
+        print count
 
     return centroid, centroid_member, centroid_prob
