@@ -9,15 +9,28 @@ def dist(a, b):
 def init(data, k):
     """ kmeans++ initialization """
     centroid = [data[int(len(data)*random())]]
+
+    # Cache dist table to prevent duplicate computations
+    cache = [ -1 for i in xrange(len(data)) ]
+    recent_centroid = centroid[0]
+
     while len(centroid) < k:
+        print "p1", len(centroid)
         dist_list = []
-        for i in data:
-            dist_list.append(min([dist(i, j) for j in centroid]))
+        for i in xrange(len(data)):
+            cadidate = dist(data[i], recent_centroid)
+            d = cadidate if cache[i] < 0 else min(cadidate, cache[i])
+            cache[i] = d
+            dist_list.append(d)
+
+
+        print "p2"
         arrow = sum(dist_list) * random()
         for i in xrange(len(dist_list)):
             arrow -= dist_list[i]
             if arrow <= 0:
                 centroid.append(data[i])
+                recent_centroid = data[i]
                 break
     return centroid
 
