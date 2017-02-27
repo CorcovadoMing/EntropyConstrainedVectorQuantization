@@ -35,8 +35,9 @@ def ECVQ(data, k, l):
 
     # Initial variables
     total = len(data)
-    update_list = xrange(k)
-    cache = [ [-1] * k ]
+    update_list = [True] * k
+    cache = [[]] * total
+    mapping = [0] * total
 
     # Initial the centroid with kmeans++
     centroid = init(data, k)
@@ -47,9 +48,17 @@ def ECVQ(data, k, l):
 
         # Assign each data point to its cluster
         centroid_member = [ [] for i in centroid ]
+        next_update = [False] * k
         for i in xrange(total):
-            matrix = [dist(data[i], centroid[j])-(l*math.log(centroid_prob[j])) for j in xrange(k)]
-            centroid_member[matrix.index(min(matrix))].append(i)
+            matrix = [dist(data[i], centroid[j])-(l*math.log(centroid_prob[j])) if update_list[j] else cache[i][j] for j in xrange(k)]
+            cache[i] = matrix
+            classes = matrix.index(min(matrix))
+            t = mapping[i]
+            if t != classes:
+                next_update[t] = True
+                next_update[classes] = True
+            mapping[i] = classes
+            centroid_member[classes].append(i)
 
         # Caculate the prob
         centroid_prob = [ len(i)/float(total) for i in centroid_member ]
@@ -60,20 +69,16 @@ def ECVQ(data, k, l):
 
         # Update centroids
         update_id = 0
-        count = 0
         for c in centroid_member:
-            if len(c):
+            if len(c) and next_update[update_id]:
                 acc = data[c[0]]
                 nacc = [float(len(c))] * len(data[0])
                 for i in xrange(1, len(c)):
                     acc = map(add, acc, data[c[i]])
-                t = centroid[update_id]
-                centroid[update_id] = map(div, acc, nacc)[:]
-                if t == centroid[update_id]:
-                    count += 1
-            else:
-                    count += 1
+                update = map(div, acc, nacc)
+                if centroid[update_id] != update:
+                    centroid[update_id] = update
             update_id += 1
-        print count
+        update_list = next_update
 
-    return centroid, centroid_member, centroid_prob
+    return centroid, centroid_member, centroid_prob, mapping
