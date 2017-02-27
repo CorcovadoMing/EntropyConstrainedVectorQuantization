@@ -3,7 +3,7 @@ from ecvq import ECVQ
 
 if __name__ == '__main__':
     data = []
-    data_num = 2000
+    data_num = 3000
     data_dim = 9
     data_range = 30
     cluster = 64

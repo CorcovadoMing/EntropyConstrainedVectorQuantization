@@ -30,7 +30,7 @@ def init(data, k):
                 break
     return centroid
 
-def ECVQ(data, k, l):
+def ECVQ(data, k, l, max_iters=30):
     """ k is the maximum number of clusters, l is the lagrange limitation """
 
     # Initial variables
@@ -43,8 +43,8 @@ def ECVQ(data, k, l):
     centroid = init(data, k)
     centroid_prob = [ 0.000000000001 ] * k
 
-    for times in xrange(10):
-        print times
+    for iters in xrange(max_iters):
+        print iters
 
         # Assign each data point to its cluster
         centroid_member = [ [] for i in centroid ]
