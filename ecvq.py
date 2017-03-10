@@ -6,7 +6,7 @@ def dist(a, b):
     result = 0
     for i in xrange(len(a)):
         result += (a[i] - b[i])**2
-    return result
+    return math.sqrt(result)
 
 def init(data, k):
     """ kmeans++ initialization """
