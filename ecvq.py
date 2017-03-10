@@ -1,12 +1,14 @@
 from numpy.random import random
 from operator import add, div
-import math
+from math import sqrt, log
 
 def dist(a, b):
     result = 0
     for i in xrange(len(a)):
         result += (a[i] - b[i])**2
-    return math.sqrt(result)
+        # Potential performance trick
+        # (a-b)**2 = a**2 + b**2 - (ab+ab), where a**2 and b**2 can be cached!
+    return sqrt(result)
 
 def init(data, k):
     """ kmeans++ initialization """
@@ -40,7 +42,7 @@ def ECVQ(data, k, l, max_iters=30):
     update_list = [True] * k
     cache = [[]] * total
     mapping = [0] * total
-    force = [ l * math.log( (i/total)+1e-12 ) for i in xrange(total)]
+    force = [ l * log( (i/total)+1e-12 ) for i in xrange(total)]
 
     # Initial the centroid with kmeans++
     centroid = init(data, k)
