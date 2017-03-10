@@ -11,5 +11,5 @@ if __name__ == '__main__':
     for i in xrange(data_num):
         data.append([random()*data_range for i in xrange(data_dim)])
 
-    centroid, centroid_member, centroid_prob, mapping = ECVQ(data, cluster, 2)
+    centroid, centroid_member, mapping = ECVQ(data, cluster, 2)
     print centroid_prob

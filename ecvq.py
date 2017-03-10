@@ -38,10 +38,10 @@ def ECVQ(data, k, l, max_iters=30):
     update_list = [True] * k
     cache = [[]] * total
     mapping = [0] * total
+    force = [ l * math.log( (i/total)+1e-12 ) for i in xrange(total)]
 
     # Initial the centroid with kmeans++
     centroid = init(data, k)
-    centroid_prob = [ 0.000000000001 ] * k
 
     for iters in xrange(max_iters):
         print iters
@@ -50,7 +50,7 @@ def ECVQ(data, k, l, max_iters=30):
         centroid_member = [ [] for i in centroid ]
         next_update = [False] * k
         for i in xrange(total):
-            matrix = [dist(data[i], centroid[j])-(l*math.log(centroid_prob[j])) if update_list[j] else cache[i][j] for j in xrange(k)]
+            matrix = [dist(data[i], centroid[j]) - force[len(centroid_member[j])] if update_list[j] else cache[i][j] for j in xrange(k)]
             cache[i] = matrix
             classes = matrix.index(min(matrix))
             t = mapping[i]
@@ -59,13 +59,6 @@ def ECVQ(data, k, l, max_iters=30):
                 next_update[classes] = True
             mapping[i] = classes
             centroid_member[classes].append(i)
-
-        # Caculate the prob
-        centroid_prob = [ len(i)/float(total) for i in centroid_member ]
-        for i in xrange(len(centroid_prob)):
-            if centroid_prob[i] == 0:
-                # Avoid log(0) error
-                centroid_prob[i] = 0.000000000001
 
         # Update centroids
         update_id = 0
@@ -81,4 +74,4 @@ def ECVQ(data, k, l, max_iters=30):
             update_id += 1
         update_list = next_update
 
-    return centroid, centroid_member, centroid_prob, mapping
+    return centroid, centroid_member, mapping
