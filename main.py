@@ -12,4 +12,3 @@ if __name__ == '__main__':
         data.append([random()*data_range for i in xrange(data_dim)])
 
     centroid, centroid_member, mapping = ECVQ(data, cluster, 2)
-    print centroid_prob

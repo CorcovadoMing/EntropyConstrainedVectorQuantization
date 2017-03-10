@@ -1,10 +1,12 @@
 from numpy.random import random
 from operator import add, div
-import numpy as np
 import math
 
 def dist(a, b):
-    return np.linalg.norm(np.array(a)-np.array(b))
+    result = 0
+    for i in xrange(len(a)):
+        result += (a[i] - b[i])**2
+    return result
 
 def init(data, k):
     """ kmeans++ initialization """
@@ -50,7 +52,11 @@ def ECVQ(data, k, l, max_iters=30):
         centroid_member = [ [] for i in centroid ]
         next_update = [False] * k
         for i in xrange(total):
+
+            # (s) Bottle neck
             matrix = [dist(data[i], centroid[j]) - force[len(centroid_member[j])] if update_list[j] else cache[i][j] for j in xrange(k)]
+            # (e) Bottle neck
+
             cache[i] = matrix
             classes = matrix.index(min(matrix))
             t = mapping[i]
