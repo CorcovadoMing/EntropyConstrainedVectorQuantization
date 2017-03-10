@@ -3,9 +3,9 @@ from ecvq import ECVQ
 
 if __name__ == '__main__':
     data = []
-    data_num = 3000
+    data_num = 10000
     data_dim = 9
-    data_range = 30
+    data_range = 10
     cluster = 64
 
     for i in xrange(data_num):
