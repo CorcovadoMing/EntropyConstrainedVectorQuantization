@@ -36,12 +36,11 @@ def ECVQ(data, k, l, max_iters=300):
 
     # Initial variables
     total = len(data)
-    update_list = [True] * k
-
     alpha = 1e-12
     matrix = np.zeros(k)
     cache = np.zeros((total, k))
     mapping = np.zeros(total).astype(int)
+    update_list = np.ones(k).astype(int)
 
     # Force lookup table enumerate all possible lambda force
     force = [ l * log( (float(i)/total)+alpha ) for i in xrange(total)]
@@ -54,7 +53,7 @@ def ECVQ(data, k, l, max_iters=300):
 
         # Assign each data point to its cluster
         centroid_member = [ [] for _ in centroid ]
-        next_update = [False] * k
+        next_update = np.zeros_like(update_list).astype(int)
 
         for i in xrange(total):
             for j in xrange(k):
@@ -69,8 +68,8 @@ def ECVQ(data, k, l, max_iters=300):
 
             t = mapping[i]
             if t != classes:
-                next_update[t] = True
-                next_update[classes] = True
+                next_update[t] = 1
+                next_update[classes] = 1
             mapping[i] = classes
             centroid_member[classes].append(i)
 
