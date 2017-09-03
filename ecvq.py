@@ -1,14 +1,11 @@
+import numpy as np
 from numpy.random import random
 from operator import add, div
 from math import sqrt, log
+import copy
 
 def dist(a, b):
-    result = 0
-    for i in xrange(len(a)):
-        result += (a[i] - b[i])**2
-        # Potential performance trick
-        # (a-b)**2 = a**2 + b**2 - (ab+ab), where a**2 and b**2 can be cached!
-    return sqrt(result)
+    return (((a - b)**2).sum())**0.5
 
 def init(data, k):
     """ kmeans++ initialization """
@@ -34,33 +31,42 @@ def init(data, k):
                 break
     return centroid
 
-def ECVQ(data, k, l, max_iters=30):
+def ECVQ(data, k, l, max_iters=300):
     """ k is the maximum number of clusters, l is the lagrange limitation """
 
     # Initial variables
     total = len(data)
     update_list = [True] * k
-    cache = [[]] * total
-    mapping = [0] * total
-    force = [ l * log( (i/total)+1e-12 ) for i in xrange(total)]
+
+    alpha = 1e-12
+    matrix = np.zeros(k)
+    cache = np.zeros((total, k))
+    mapping = np.zeros(total).astype(int)
+
+    # Force lookup table enumerate all possible lambda force
+    force = [ l * log( (float(i)/total)+alpha ) for i in xrange(total)]
 
     # Initial the centroid with kmeans++
     centroid = init(data, k)
 
     for iters in xrange(max_iters):
-        print iters
+        diff = 0
 
         # Assign each data point to its cluster
-        centroid_member = [ [] for i in centroid ]
+        centroid_member = [ [] for _ in centroid ]
         next_update = [False] * k
+
         for i in xrange(total):
+            for j in xrange(k):
+                if update_list[j]:
+                    matrix[j] = dist(data[i], centroid[j])-force[len(centroid_member[j])]
+                    cache[i][j] = matrix[j]
+                else:
+                    matrix[j] = cache[i][j]
 
-            # (s) Bottle neck
-            matrix = [dist(data[i], centroid[j]) - force[len(centroid_member[j])] if update_list[j] else cache[i][j] for j in xrange(k)]
-            # (e) Bottle neck
+            classes = matrix.argmin()
+            diff += matrix.min()
 
-            cache[i] = matrix
-            classes = matrix.index(min(matrix))
             t = mapping[i]
             if t != classes:
                 next_update[t] = True
@@ -70,16 +76,21 @@ def ECVQ(data, k, l, max_iters=30):
 
         # Update centroids
         update_id = 0
+        updated = np.zeros_like(data[0])
         for c in centroid_member:
             if len(c) and next_update[update_id]:
-                acc = data[c[0]]
-                nacc = [float(len(c))] * len(data[0])
-                for i in xrange(1, len(c)):
-                    acc = map(add, acc, data[c[i]])
-                update = map(div, acc, nacc)
-                if centroid[update_id] != update:
-                    centroid[update_id] = update
+                for i in xrange(len(c)):
+                    updated += data[c[i]]
+                updated /= len(c)
+                centroid[update_id] = copy.deepcopy(updated)
             update_id += 1
-        update_list = next_update
+        update_list = copy.deepcopy(next_update)
+
+        count = 0
+        for c in centroid_member:
+            if len(c) > 0:
+                count += 1
+
+        print iters, diff, count
 
     return centroid, centroid_member, mapping
